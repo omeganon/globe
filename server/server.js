@@ -32,7 +32,7 @@ var oldtrack = {
   'PASSWORD_RESET': '', 
   'UPLOAD': '', 
   'ACTIVATE': '', 
-  'PASSOWRD_CHANGE': '', 
+  'PASSWORD_CHANGE': '', 
 };
 var oldapp;
 var memcached = new Memcached('felix.int:11211');
