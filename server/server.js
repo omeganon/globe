@@ -32,13 +32,13 @@ var oldtrack = {
   'PASSWORD_RESET': '', 
   'UPLOAD': '', 
   'ACTIVATE': '', 
-  'PASSWORD_CHANGE': '', 
+  'PASSOWRD_CHANGE': '', 
 };
 var oldapp;
-var memcached = new Memcached('felix.int:11211');
+var memcached = new Memcached('c-dc-log01.dc.e2.ma:11211');
  
 // configure everything, just basic setup
-app.set('port', process.env.PORT || 8081);
+app.set('port', process.env.PORT || 8083);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.use(morgan('dev'));
@@ -58,7 +58,7 @@ app.get('/stats', function(req, res) {
     console.log("new client connection. Total connections (0 indexed): " + openConnections.length);
  
     // set timeout as high as possible
-    req.socket.setTimeout(Infinity);
+    req.socket.setTimeout(Number.MAX_VALUE);
  
     // send headers for event-stream connection
     // see spec for more information
@@ -115,18 +115,20 @@ interval(function() {
       for (var result in data) {
         if (data.hasOwnProperty(result)) {
        	  var json = JSON.parse(data[result]);
-          if (json.address != oldtrack[json.type]) {
-            var geo = geoip.lookup(json.address);
-            if (geo !==null && geo.ll[0] != 38 && geo.ll[1] != -97) {
-              openConnections.forEach(function(resp) {
-              var d = new Date();
-                resp.write('id: ' + d.getMilliseconds() + '\n');
-                resp.write('event: ' + json.type + '\n');
-                resp.write('data:{ "geo": { "latitude": "' + geo.ll[0] + '", "longitude": "' + geo.ll[1] + '" } }\n\n'); // Note the extra newline
-              });
-            } 
-            oldtrack[json.type] = json.address;
-          }
+	  if (json.address !== null) {
+            if (json.address != oldtrack[json.type]) {
+              var geo = geoip.lookup(json.address);
+              if (geo !==null && geo.ll[0] != 38 && geo.ll[1] != -97) {
+                openConnections.forEach(function(resp) {
+                var d = new Date();
+                  resp.write('id: ' + d.getMilliseconds() + '\n');
+                  resp.write('event: ' + json.type + '\n');
+                  resp.write('data:{ "geo": { "latitude": "' + geo.ll[0] + '", "longitude": "' + geo.ll[1] + '" } }\n\n'); // Note the extra newline
+                });
+              } 
+              oldtrack[json.type] = json.address;
+            }
+	  }
         }
       }
   });

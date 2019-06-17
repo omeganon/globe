@@ -40,7 +40,6 @@ if(System.support.webgl === false){
       'click': 0,
       'webview': 0,
       'message': 0,
-      'share': 0,
       'sendtofriend': 0,
       'optout' : 0
     };
@@ -138,9 +137,9 @@ if(System.support.webgl === false){
   ageGeoPoints();
 
   try {
-    var ev = new EventSource("http://sys02.int:8081/stats");
+    var ev = new EventSource("http://sys01.int:8083/stats");
   } catch (e) {
-    var ev = new EventSourcePollyfill("http://sys02.int:8081/stats");
+    var ev = new EventSourcePollyfill("http://sys01.int:8083/stats");
   }
 
   for (var key in types) {

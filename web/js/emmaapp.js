@@ -12,14 +12,42 @@ if(System.support.webgl === false){
 } else {
 
   var $container = $('#container');
-  var globe_scale = parseInt(ORBITAL.Util.getParameterByName('globeScale'), 10) || 3;
-  console.log(globe_scale);
+  var globe_scale = parseInt(ORBITAL.Util.getParameterByName('globeScale'), 10) || 1;
+  var viewtype = ORBITAL.Util.getParameterByName('type') || 'tracker';
+  if (viewtype === 'app') {
+    var typecount = {
+      'LOGIN': 0,
+      'EDITOR': 0,
+      'MAIL': 0,
+      'RESPONSE': 0,
+      'ACCT_JUMP': 0,
+      'IMPORT': 0,
+      'EXPORT': 0,
+      'SCHEDULED': 0,
+      'AUDIENCE': 0,
+      'BILLING': 0, 
+      'PASSWORD_RESET': 0, 
+      'UPLOAD': 0, 
+      'ACTIVATE': 0, 
+      'PASSOWRD_CHANGE': 0, 
+    }
+  } else {
+    var typecount = {
+      'track': 0,
+      'click': 0,
+      'webview': 0,
+      'message': 0,
+      'sendtofriend': 0,
+      'optout' : 0
+    };
+  }
+//  console.log(globe_scale);
   var globe = new ORBITAL.Globe($container, {scale: globe_scale});
   globe.animate();
 
   var addGeoPoint = function(latitude, longitude) {
     var point = globe.getPoint(latitude, longitude);
-
+//    console.log('latitude: ' + latitude + ', longitude: ' + longitude);
     if (!point) {
       point = {lat:latitude, lng:longitude, mag:0};
     }
@@ -59,15 +87,20 @@ if(System.support.webgl === false){
 
     if (geo) { // geo might be undefined
       addGeoPoint(geo.latitude, geo.longitude);
-      if(e.type == "Post"){
-        requestAnimationFrame(function(){showPost(data);});
-      }
+      typecount[e.type]++;
+      requestAnimationFrame(function(){showPost(data);});
     }
 
   };
 
   var showPost = _.debounce(function(message) {
-    var mb = message.message_body;
+   
+    var mb = ""; 
+    for (var key in typecount) {
+      if (typecount.hasOwnProperty(key)) {
+      mb += "<div class='key'>" + key + "</div><div class='value'>" + typecount[key] + "</div><br>";
+      }
+    }
 
     var postinfo = $("#postInfo");
 
@@ -79,19 +112,20 @@ if(System.support.webgl === false){
     $post.addClass("post");
     $avatar.addClass("avatar");
 
-    $avatar.attr("src", mb.author.avatar);
-    $post.html(mb.post.messages.formatted);
+//    $avatar.attr("src", 'foo');
+    $post.html(mb);
 
     // $post.prepend($avatar);
     $postbox.append($post);
 
-    postinfo.append($postbox);
+    postinfo.html($postbox);
 
+    delete mb;
     while(postinfo.height() > window.innerHeight){
       $("#postInfo div:first").remove();
     }
 
-//    globe.setFocus(mb.geo.latitude, mb.geo.longitude);
+    // globe.setFocus(mb.geo.latitude, mb.geo.longitude);
 
   }, 0);
 
@@ -110,10 +144,28 @@ if(System.support.webgl === false){
     var ev = new EventSourcePollyfill("http://sys01.int:8083/stats");
   }
 
-  ev.addEventListener("App", handleGeoEvent);
-
-  // globe.addFocusPoint('new york', 40.77, 73.98, 3);
-  // globe.addFocusPoint('london', 50.5, 0.166, 3);
-  // globe.focusRotate();
+  if (viewtype === 'app') {
+    ev.addEventListener("EDITOR", handleGeoEvent);
+    ev.addEventListener("LOGIN", handleGeoEvent);
+    ev.addEventListener("MAIL", handleGeoEvent);
+    ev.addEventListener("RESPONSE", handleGeoEvent);
+    ev.addEventListener("ACCT_JUMP", handleGeoEvent);
+    ev.addEventListener("IMPORT", handleGeoEvent);
+    ev.addEventListener("EXPORT", handleGeoEvent);
+    ev.addEventListener("SCHEDULED", handleGeoEvent);
+    ev.addEventListener("AUDIENCE", handleGeoEvent);
+    ev.addEventListener("BILLING", handleGeoEvent);
+    ev.addEventListener("PASSWORD_RESET", handleGeoEvent);
+    ev.addEventListener("UPLOAD", handleGeoEvent);
+    ev.addEventListener("ACTIVATE", handleGeoEvent);
+    ev.addEventListener("PASSOWRD_CHANGE", handleGeoEvent);
+  } else {
+    ev.addEventListener("click", handleGeoEvent);
+    ev.addEventListener("track", handleGeoEvent);
+    ev.addEventListener("optout", handleGeoEvent);
+    ev.addEventListener("sendtofriend", handleGeoEvent);
+    ev.addEventListener("message", handleGeoEvent);
+    ev.addEventListener("webview", handleGeoEvent);
+  }
 
 }

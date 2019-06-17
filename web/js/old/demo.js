@@ -105,9 +105,9 @@ if(System.support.webgl === false){
   ageGeoPoints();
 
   try {
-    var ev = new EventSource("http://sys01.int:8083/stats");
+    var ev = new EventSource("http://sys01.int:8080/stats");
   } catch (e) {
-    var ev = new EventSourcePollyfill("http://sys01.int:8083/stats");
+    var ev = new EventSourcePollyfill("http://sys01.int:8080/stats");
   }
 
   ev.addEventListener("App", handleGeoEvent);
